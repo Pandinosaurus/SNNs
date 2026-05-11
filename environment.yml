@@ -1,22 +1,24 @@
 name: snn
 channels:
-  - pytorch
   - conda-forge
-  - defaults
 dependencies:
-  - python=3.7
-  - pip=21.0.1
-  - numpy=1.20.0
-  - scipy=1.6.0
-  - sympy=1.7.1
-  - pandas=1.2.2
-  - scikit-learn=0.24.1
-  - matplotlib=3.3.4
-  - jupyter=1.0.0
-  - tqdm=4.56.0
-  - tensorflow=2.3.0
-  # GPU compatibility, check your nvidia drivers to find what toolkit is supported by your GPU
-  - cudatoolkit=10.1
-  # Pytorch dependencies
-  - pytorch=1.7.1
-  - torchvision=0.8.2
+  - python=3.10
+  - pip
+  - ipykernel
+  - jupyter
+  - numpy
+  - scipy
+  - sympy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - tqdm
+  - pip:
+      # Linux/NVIDIA GPU setup.
+      # TensorFlow installs its CUDA dependencies via the and-cuda extra on Linux.
+      # PyTorch CUDA wheels may need to be selected from the official PyTorch
+      # install selector if the target machine uses a different CUDA setup.
+      - "tensorflow[and-cuda]==2.21.0; platform_system == 'Linux' and platform_machine == 'x86_64'"
+      - "tensorflow==2.21.0; platform_system != 'Linux' or platform_machine != 'x86_64'"
+      - torch==2.11.0
+      - torchvision==0.26.0
