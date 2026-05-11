@@ -37,20 +37,3 @@ PyTorch implementations.
   and reserve the test set for final evaluation.
 - Avoid saving trained models or generated result files unless they are used by
   another script or explicitly requested.
-
-## Environment Guidance
-
-- Keep the environment file concise and portable; do not commit raw machine-specific
-  `conda env export` output.
-- Do not reintroduce old CUDA toolkit pins such as `cudatoolkit=10.1`.
-- For Linux/NVIDIA systems, TensorFlow GPU dependencies should use the modern
-  `tensorflow[and-cuda]` pip extra.
-
-## Validation
-
-- For Python scripts, run a lightweight smoke test before finishing when possible.
-  Reducing `epochs` to `0` is acceptable for import/build/evaluate checks.
-- For notebooks, prefer small-subset or quick cell-level tests when full training is
-  too expensive.
-- Verify imports for TensorFlow, PyTorch, torchvision, NumPy, scikit-learn,
-  matplotlib, and tqdm after environment changes.
