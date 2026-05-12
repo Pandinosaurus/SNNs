@@ -1,82 +1,91 @@
-# Adapted KERAS tutorial 
-
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, AlphaDropout, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.keras import backend as K
+from tensorflow import keras
+from tensorflow.keras import layers
 
 
 batch_size = 128
 num_classes = 10
 epochs = 5
+learning_rate = 0.001
 
-# input image dimensions
-img_rows, img_cols = 28, 28
-
-# list devices so you can check whether your gpu is available
+# List devices so you can check whether your GPU is available.
 print(tf.config.list_physical_devices())
 
-# the data, shuffled and split between train and test sets
-(x_train, y_train), (x_test, y_test) = mnist.load_data()
+# The data, shuffled and split between train and test sets.
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+x_train = x_train[..., None].astype("float32") / 255.0
+x_test = x_test[..., None].astype("float32") / 255.0
 
-if K.image_data_format() == 'channels_first':
-    x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-    x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-    input_shape = (1, img_rows, img_cols)
-else:
-    x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-    x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-    input_shape = (img_rows, img_cols, 1)
-
-x_train = x_train.astype('float32')
-x_test = x_test.astype('float32')
-x_train /= 255
-#x_train = (x_train - np.mean(x_train))/np.std(x_train)
-
-x_test /= 255
-#x_test = (x_test - np.mean(x_train))/np.std(x_train)
-
-# create validation file
+# Create validation set.
 x_val = x_train[:10000]
 x_train = x_train[10000:]
 y_val = y_train[:10000]
 y_train = y_train[10000:]
 
-print('x_train shape:', x_train.shape)
-print(x_train.shape[0], 'train samples')
-print(x_val.shape[0], 'val samples')
-print(x_test.shape[0], 'test samples')
+print("x_train shape:", x_train.shape)
+print(x_train.shape[0], "train samples")
+print(x_val.shape[0], "val samples")
+print(x_test.shape[0], "test samples")
 
-# convert class vectors to binary class matrices
+# Convert class vectors to binary class matrices.
 y_train = keras.utils.to_categorical(y_train, num_classes)
 y_val = keras.utils.to_categorical(y_val, num_classes)
 y_test = keras.utils.to_categorical(y_test, num_classes)
 
-model = Sequential()
-model.add(Conv2D(32, (3, 3),activation='selu',kernel_initializer='lecun_normal',bias_initializer='zeros'))
-model.add(Conv2D(64, (3, 3), activation='selu',kernel_initializer='lecun_normal',bias_initializer='zeros'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(AlphaDropout(0.05))
-model.add(Flatten())
-model.add(Dense(512, activation='selu',kernel_initializer='lecun_normal',bias_initializer='zeros'))
-model.add(AlphaDropout(0.05))
-model.add(Dense(num_classes, activation='softmax',kernel_initializer='lecun_normal',bias_initializer='zeros'))
+model = keras.Sequential(
+    [
+        keras.Input(shape=(28, 28, 1)),
+        layers.Conv2D(
+            32,
+            (3, 3),
+            activation="selu",
+            kernel_initializer=keras.initializers.LecunNormal(),
+            bias_initializer="zeros",
+        ),
+        layers.Conv2D(
+            64,
+            (3, 3),
+            activation="selu",
+            kernel_initializer=keras.initializers.LecunNormal(),
+            bias_initializer="zeros",
+        ),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.AlphaDropout(0.05),
+        layers.Flatten(),
+        layers.Dense(
+            512,
+            activation="selu",
+            kernel_initializer=keras.initializers.LecunNormal(),
+            bias_initializer="zeros",
+        ),
+        layers.AlphaDropout(0.05),
+        layers.Dense(
+            num_classes,
+            activation="softmax",
+            kernel_initializer=keras.initializers.LecunNormal(),
+            bias_initializer="zeros",
+        ),
+    ]
+)
 
-model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adam(learning_rate=1e-3),
-              metrics=['accuracy'])
+# Compile the model with the appropriate loss function, optimizer, and metrics.
+model.compile(
+    loss=keras.losses.CategoricalCrossentropy(),
+    optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+    metrics=["accuracy"],
+)
 
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=1,
-          validation_data=(x_val, y_val))
+# Train the model and validate on the validation set.
+model.fit(
+    x_train,
+    y_train,
+    batch_size=batch_size,
+    epochs=epochs,
+    verbose=1,
+    validation_data=(x_val, y_val),
+)
 
+# Evaluate the model on the test set.
 score = model.evaluate(x_test, y_test, verbose=0)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
-
-
+print("Test loss:", score[0])
+print("Test accuracy:", score[1])

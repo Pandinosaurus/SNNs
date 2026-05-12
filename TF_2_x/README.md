@@ -1,1 +1,0 @@
-Both Keras examples are based on dependencies described in [this](../environment.yml) environment file.
