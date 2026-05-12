@@ -10,6 +10,46 @@ This repository contains tutorial implementations for Self-Normalizing Networks
 show how SELU networks are constructed and compared across TensorFlow and
 PyTorch implementations.
 
+## Minimal Tabular SNN Example
+
+Below is a minimal prototype (see TF_2_x/TABULAR-MLP-SELU.py) for showing SNNs 
+on tabular data: load a small scikit-learn dataset, standardize the features, 
+and train a compact Keras MLP with SELU, LeCun initialization, and AlphaDropout.
+
+```python
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow import keras
+from tensorflow.keras import layers
+
+X, y = load_breast_cancer(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=0, stratify=y
+)
+
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+model = keras.Sequential(
+    [
+        keras.Input(shape=(X_train.shape[1],)),
+        layers.Dense(64, activation="selu", kernel_initializer="lecun_normal"),
+        layers.AlphaDropout(0.05),
+        layers.Dense(32, activation="selu", kernel_initializer="lecun_normal"),
+        layers.Dense(1, activation="sigmoid"),
+    ]
+)
+model.compile(
+    optimizer=keras.optimizers.Adam(learning_rate=1e-3),
+    loss="binary_crossentropy",
+    metrics=["accuracy"],
+)
+model.fit(X_train, y_train, epochs=20, batch_size=32, validation_split=0.2)
+print(model.evaluate(X_test, y_test, verbose=0))
+```
+
 ## Core SNN Rules
 
 - Pair SELU activations with LeCun normal initialization.
@@ -22,18 +62,7 @@ PyTorch implementations.
 
 ## Repository Structure
 
-- `TF_1_x/` contains legacy TensorFlow 1.x material.
 - `TF_2_x/` contains current TensorFlow/Keras scripts.
 - `Pytorch/` contains PyTorch notebooks.
 - The root `environment.yml` is the main environment for current TF2 and PyTorch
-  examples. `TF_1_x/environment.yml` belongs to the legacy TF1 material.
-
-## Maintenance Guidance
-
-- Treat `TF_1_x/` as legacy unless a task explicitly asks to update it.
-- Prefer current `tf.keras`/Keras APIs in `TF_2_x/`.
-- Prefer idiomatic PyTorch training/evaluation loops in `Pytorch/`.
-- Keep dataset splits clean: train on training data, validate on a validation split,
-  and reserve the test set for final evaluation.
-- Avoid saving trained models or generated result files unless they are used by
-  another script or explicitly requested.
+  examples.
